@@ -1,0 +1,11 @@
+demo:
+  target: prod
+  outputs:
+    prod:
+      type: bigquery
+      method: oauth
+      project: nnd-internal
+      dataset: demo_dbt_output
+      location: EU
+      threads: 4
+      timeout_seconds: 300

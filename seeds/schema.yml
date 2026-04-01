@@ -1,0 +1,44 @@
+version: 2
+
+seeds:
+  - name: seed_daily_performance
+    description: "Daily GA4 website performance with traffic attribution"
+    columns:
+      - name: session_date
+        description: "Date of the session"
+      - name: sessions
+        description: "Number of sessions"
+      - name: revenue
+        description: "Transaction revenue in EUR"
+
+  - name: seed_google_ads_performance
+    description: "Daily Google Ads campaign performance"
+    columns:
+      - name: report_date
+        description: "Date of the report"
+      - name: cost
+        description: "Ad spend in EUR"
+
+  - name: seed_seo_performance
+    description: "Daily Google Search Console site-level performance"
+    columns:
+      - name: data_date
+        description: "Date of the data"
+
+  - name: seed_seo_pages
+    description: "Daily Google Search Console page-level performance"
+    columns:
+      - name: data_date
+        description: "Date of the data"
+
+  - name: seed_ecommerce_funnel
+    description: "Daily ecommerce funnel stages by device and channel"
+    columns:
+      - name: event_date
+        description: "Date of the events"
+
+  - name: seed_customer_retention
+    description: "Monthly customer retention cohort data"
+    columns:
+      - name: cohort_month
+        description: "Month of first purchase (YYYY-MM)"
