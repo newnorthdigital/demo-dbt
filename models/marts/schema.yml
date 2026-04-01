@@ -1,70 +1,23 @@
 version: 2
 
 models:
-  # ── DAILY WEBSITE PERFORMANCE ──────────────────────────────────────────────
-  - name: mart_daily_performance
-    description: "Daily website performance with traffic attribution, engagement, and ecommerce funnel"
+  # ── ORDERS & REVENUE (Overview + Orders page) ──────────────────────────────
+  - name: mart_orders_revenue
+    description: "Daily orders, revenue, refunds, COGS, profit, and ad spend by channel"
     meta:
-      label: "Website Performance"
+      label: "Orders & Revenue"
     columns:
-      - name: session_date
-        description: "Date of the session"
+      - name: order_date
         meta:
           dimension:
             type: date
             label: "Date"
-
-      - name: session_source
-        description: "Traffic source (e.g., google, facebook, direct)"
-        meta:
-          dimension:
-            type: string
-            label: "Source"
-
-      - name: session_medium
-        description: "Traffic medium (e.g., cpc, organic, referral)"
-        meta:
-          dimension:
-            type: string
-            label: "Medium"
-
-      - name: session_campaign
-        description: "Campaign name"
-        meta:
-          dimension:
-            type: string
-            label: "Campaign"
-
-      - name: session_default_channel_grouping
-        description: "Default channel grouping (Paid Search, Organic Search, etc.)"
+      - name: channel
         meta:
           dimension:
             type: string
             label: "Channel"
-
-      - name: device_category
-        description: "Device type (desktop, mobile, tablet)"
-        meta:
-          dimension:
-            type: string
-            label: "Device"
-
-      - name: country
-        description: "Country of the user"
-        meta:
-          dimension:
-            type: string
-            label: "Country"
-
-      - name: landing_page_path
-        description: "Landing page URL path"
-        meta:
-          dimension:
-            type: string
-            label: "Landing page"
-
       - name: sessions
-        description: "Number of sessions"
         meta:
           dimension:
             hidden: true
@@ -72,25 +25,216 @@ models:
             total_sessions:
               type: sum
               label: "Sessions"
-
-      - name: engaged_sessions
-        description: "Number of engaged sessions"
+      - name: orders
         meta:
           dimension:
             hidden: true
           metrics:
-            total_engaged_sessions:
+            total_orders:
               type: sum
-              label: "Engaged sessions"
-            engagement_rate:
+              label: "Orders"
+            conversion_rate:
               type: number
-              label: "Engagement rate"
-              sql: "SAFE_DIVIDE(${total_engaged_sessions}, ${total_sessions})"
+              label: "Conversion rate"
+              sql: "SAFE_DIVIDE(${total_orders}, ${total_sessions})"
+              format: "percent"
+              round: 2
+      - name: new_customer_orders
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_new_customer_orders:
+              type: sum
+              label: "New customer orders"
+            new_customer_rate:
+              type: number
+              label: "New customer rate"
+              sql: "SAFE_DIVIDE(${total_new_customer_orders}, ${total_orders})"
               format: "percent"
               round: 1
+      - name: returning_customer_orders
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_returning_customer_orders:
+              type: sum
+              label: "Returning customer orders"
+            returning_rate:
+              type: number
+              label: "Returning rate"
+              sql: "SAFE_DIVIDE(${total_returning_customer_orders}, ${total_orders})"
+              format: "percent"
+              round: 1
+      - name: gross_revenue
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_gross_revenue:
+              type: sum
+              label: "Gross revenue"
+              format: "eur"
+              round: 0
+            avg_order_value:
+              type: number
+              label: "Avg order value"
+              sql: "SAFE_DIVIDE(${total_gross_revenue}, ${total_orders})"
+              format: "eur"
+              round: 0
+      - name: amount_refunded
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_refunded:
+              type: sum
+              label: "Amount refunded"
+              format: "eur"
+              round: 0
+      - name: net_revenue
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_net_revenue:
+              type: sum
+              label: "Net revenue"
+              format: "eur"
+              round: 0
+      - name: units_sold
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_units_sold:
+              type: sum
+              label: "Units sold"
+      - name: units_returned
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_units_returned:
+              type: sum
+              label: "Units returned"
+            return_rate:
+              type: number
+              label: "Return rate"
+              sql: "SAFE_DIVIDE(${total_units_returned}, ${total_units_sold})"
+              format: "percent"
+              round: 1
+      - name: cogs
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_cogs:
+              type: sum
+              label: "COGS"
+              format: "eur"
+              round: 0
+      - name: gross_profit
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_gross_profit:
+              type: sum
+              label: "Gross profit"
+              format: "eur"
+              round: 0
+            gross_margin:
+              type: number
+              label: "Gross margin"
+              sql: "SAFE_DIVIDE(${total_gross_profit}, ${total_net_revenue})"
+              format: "percent"
+              round: 1
+            net_profit:
+              type: number
+              label: "Net profit"
+              sql: "${total_gross_profit} - ${total_ad_spend}"
+              format: "eur"
+              round: 0
+      - name: ad_spend
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_ad_spend:
+              type: sum
+              label: "Ad spend"
+              format: "eur"
+              round: 0
+            blended_roas:
+              type: number
+              label: "Blended ROAS"
+              sql: "SAFE_DIVIDE(${total_gross_revenue}, ${total_ad_spend})"
+              round: 1
+            blended_poas:
+              type: number
+              label: "Blended POAS"
+              sql: "SAFE_DIVIDE(${total_gross_profit}, ${total_ad_spend})"
+              round: 1
+            blended_cac:
+              type: number
+              label: "Blended CAC"
+              sql: "SAFE_DIVIDE(${total_ad_spend}, ${total_new_customer_orders})"
+              format: "eur"
+              round: 0
+            mer:
+              type: number
+              label: "MER"
+              sql: "SAFE_DIVIDE(${total_gross_revenue}, ${total_ad_spend})"
+              round: 1
+            cpa:
+              type: number
+              label: "CPA"
+              sql: "SAFE_DIVIDE(${total_ad_spend}, ${total_orders})"
+              format: "eur"
+              round: 0
 
+  # ── PRODUCT PERFORMANCE ────────────────────────────────────────────────────
+  - name: mart_product_performance
+    description: "Product and category-level performance with revenue, returns, COGS, and margin"
+    meta:
+      label: "Products & Categories"
+    columns:
+      - name: order_date
+        meta:
+          dimension:
+            type: date
+            label: "Date"
+      - name: product_name
+        meta:
+          dimension:
+            type: string
+            label: "Product"
+      - name: category
+        meta:
+          dimension:
+            type: string
+            label: "Category"
+      - name: item_price
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            avg_item_price:
+              type: average
+              label: "Avg item price"
+              format: "eur"
+              round: 0
+      - name: units_sold
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_units_sold:
+              type: sum
+              label: "Units sold"
       - name: revenue
-        description: "Transaction revenue in EUR"
         meta:
           dimension:
             hidden: true
@@ -99,402 +243,215 @@ models:
               type: sum
               label: "Revenue"
               format: "eur"
-              round: 2
-            avg_revenue_per_session:
-              type: number
-              label: "Revenue per session"
-              sql: "SAFE_DIVIDE(${total_revenue}, ${total_sessions})"
-              format: "eur"
-              round: 2
-
-      - name: page_views
-        description: "Number of page views"
+              round: 0
+      - name: units_returned
         meta:
           dimension:
             hidden: true
           metrics:
-            total_page_views:
+            total_units_returned:
               type: sum
-              label: "Page views"
-
-      - name: transactions
-        description: "Number of transactions"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_transactions:
-              type: sum
-              label: "Transactions"
-            conversion_rate:
+              label: "Units returned"
+            return_rate:
               type: number
-              label: "Conversion rate"
-              sql: "SAFE_DIVIDE(${total_transactions}, ${total_sessions})"
+              label: "Return rate"
+              sql: "SAFE_DIVIDE(${total_units_returned}, ${total_units_sold})"
               format: "percent"
-              round: 2
-            avg_order_value:
-              type: number
-              label: "Avg order value"
-              sql: "SAFE_DIVIDE(${total_revenue}, ${total_transactions})"
-              format: "eur"
-              round: 2
-
-      - name: add_to_cart_events
-        description: "Number of add-to-cart events"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_add_to_cart:
-              type: sum
-              label: "Add to cart"
-
-      - name: begin_checkout_events
-        description: "Number of begin-checkout events"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_begin_checkout:
-              type: sum
-              label: "Begin checkout"
-
-      - name: purchase_events
-        description: "Number of purchase events"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_purchases:
-              type: sum
-              label: "Purchases"
-
-  # ── GOOGLE ADS PERFORMANCE ─────────────────────────────────────────────────
-  - name: mart_google_ads_performance
-    description: "Google Ads campaign performance with calculated KPIs"
-    meta:
-      label: "Google Ads"
-    columns:
-      - name: report_date
-        description: "Date of the report"
-        meta:
-          dimension:
-            type: date
-            label: "Date"
-
-      - name: account_name
-        description: "Google Ads account name"
-        meta:
-          dimension:
-            type: string
-            label: "Account"
-
-      - name: campaign_name
-        description: "Campaign name"
-        meta:
-          dimension:
-            type: string
-            label: "Campaign"
-
-      - name: campaign_status
-        description: "Campaign status (ENABLED, PAUSED, REMOVED)"
-        meta:
-          dimension:
-            type: string
-            label: "Status"
-
-      - name: channel_type
-        description: "Campaign type (SEARCH, SHOPPING, PERFORMANCE_MAX, DISPLAY)"
-        meta:
-          dimension:
-            type: string
-            label: "Campaign type"
-
-      - name: device
-        description: "Device (DESKTOP, MOBILE, TABLET)"
-        meta:
-          dimension:
-            type: string
-            label: "Device"
-
-      - name: ad_network_type
-        description: "Ad network (SEARCH, CONTENT)"
-        meta:
-          dimension:
-            type: string
-            label: "Network"
-
-      - name: impressions
-        description: "Number of impressions"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_impressions:
-              type: sum
-              label: "Impressions"
-
-      - name: clicks
-        description: "Number of clicks"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_clicks:
-              type: sum
-              label: "Clicks"
-            ctr:
-              type: number
-              label: "CTR"
-              sql: "SAFE_DIVIDE(${total_clicks}, ${total_impressions})"
-              format: "percent"
-              round: 2
-
-      - name: cost
-        description: "Ad spend in EUR"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_cost:
-              type: sum
-              label: "Cost"
-              format: "eur"
-              round: 2
-            cpc:
-              type: number
-              label: "CPC"
-              sql: "SAFE_DIVIDE(${total_cost}, ${total_clicks})"
-              format: "eur"
-              round: 2
-
-      - name: conversions
-        description: "Number of conversions"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_conversions:
-              type: sum
-              label: "Conversions"
-            cost_per_conversion:
-              type: number
-              label: "Cost per conversion"
-              sql: "SAFE_DIVIDE(${total_cost}, ${total_conversions})"
-              format: "eur"
-              round: 2
-
-      - name: conversions_value
-        description: "Total conversion value in EUR"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_conversion_value:
-              type: sum
-              label: "Conversion value"
-              format: "eur"
-              round: 2
-            roas:
-              type: number
-              label: "ROAS"
-              sql: "SAFE_DIVIDE(${total_conversion_value}, ${total_cost})"
-              round: 2
-
-  # ── SEO PERFORMANCE (site-level) ───────────────────────────────────────────
-  - name: mart_seo_performance
-    description: "Google Search Console site-level SEO performance"
-    meta:
-      label: "SEO Performance"
-    columns:
-      - name: data_date
-        description: "Date"
-        meta:
-          dimension:
-            type: date
-            label: "Date"
-
-      - name: site_url
-        description: "Website URL"
-        meta:
-          dimension:
-            type: string
-            label: "Site URL"
-
-      - name: query
-        description: "Search query"
-        meta:
-          dimension:
-            type: string
-            label: "Query"
-
-      - name: search_type
-        description: "Search type (web, image, video)"
-        meta:
-          dimension:
-            type: string
-            label: "Search type"
-
-      - name: impressions
-        description: "Number of search impressions"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_impressions:
-              type: sum
-              label: "Impressions"
-
-      - name: clicks
-        description: "Number of search clicks"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_clicks:
-              type: sum
-              label: "Clicks"
-            ctr:
-              type: number
-              label: "CTR"
-              sql: "SAFE_DIVIDE(${total_clicks}, ${total_impressions})"
-              format: "percent"
-              round: 2
-
-      - name: sum_top_position
-        description: "Sum of positions (for weighted average calculation)"
-        meta:
-          dimension:
-            hidden: true
-          metrics:
-            total_sum_top_position:
-              type: sum
-              label: "Sum of positions"
-              hidden: true
-            avg_position:
-              type: number
-              label: "Avg position"
-              sql: "SAFE_DIVIDE(${total_sum_top_position}, ${total_impressions})"
               round: 1
+      - name: refund_amount
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_refunded:
+              type: sum
+              label: "Refunds"
+              format: "eur"
+              round: 0
+      - name: cogs
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_cogs:
+              type: sum
+              label: "COGS"
+              format: "eur"
+              round: 0
+      - name: margin
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_margin:
+              type: sum
+              label: "Margin"
+              format: "eur"
+              round: 0
+            margin_pct:
+              type: number
+              label: "Margin %"
+              sql: "SAFE_DIVIDE(${total_margin}, ${total_revenue})"
+              format: "percent"
+              round: 1
+      - name: repeat_order_pct
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            avg_repeat_order_pct:
+              type: average
+              label: "Repeat order %"
+              format: "percent"
+              round: 0
 
-  # ── SEO PAGES (URL-level) ──────────────────────────────────────────────────
-  - name: mart_seo_pages
-    description: "Google Search Console page-level SEO performance"
+  # ── CUSTOMERS & TRAFFIC ────────────────────────────────────────────────────
+  - name: mart_customers
+    description: "Daily new vs returning customer metrics, CLV, and AOV breakdown"
     meta:
-      label: "SEO Pages"
+      label: "Customers & Traffic"
     columns:
-      - name: data_date
-        description: "Date"
+      - name: order_date
         meta:
           dimension:
             type: date
             label: "Date"
-
-      - name: url
-        description: "Page URL"
-        meta:
-          dimension:
-            type: string
-            label: "URL"
-
-      - name: query
-        description: "Search query"
-        meta:
-          dimension:
-            type: string
-            label: "Query"
-
-      - name: impressions
-        description: "Number of impressions"
+      - name: new_customers
         meta:
           dimension:
             hidden: true
           metrics:
-            total_impressions:
+            total_new_customers:
               type: sum
-              label: "Impressions"
-
-      - name: clicks
-        description: "Number of clicks"
+              label: "New customers"
+      - name: returning_customers
         meta:
           dimension:
             hidden: true
           metrics:
-            total_clicks:
+            total_returning_customers:
               type: sum
-              label: "Clicks"
-            ctr:
+              label: "Returning customers"
+      - name: total_customers
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            sum_total_customers:
+              type: sum
+              label: "Total customers"
+            returning_customer_pct:
               type: number
-              label: "CTR"
-              sql: "SAFE_DIVIDE(${total_clicks}, ${total_impressions})"
+              label: "Returning customer %"
+              sql: "SAFE_DIVIDE(${total_returning_customers}, ${sum_total_customers})"
               format: "percent"
-              round: 2
-
-      - name: sum_top_position
-        description: "Sum of positions"
+              round: 1
+      - name: new_customer_revenue
         meta:
           dimension:
             hidden: true
           metrics:
-            total_sum_top_position:
+            total_new_customer_revenue:
               type: sum
-              hidden: true
-            avg_position:
+              label: "New customer revenue"
+              format: "eur"
+              round: 0
+            new_customer_revenue_pct:
               type: number
-              label: "Avg position"
-              sql: "SAFE_DIVIDE(${total_sum_top_position}, ${total_impressions})"
+              label: "New cust. rev %"
+              sql: "SAFE_DIVIDE(${total_new_customer_revenue}, ${total_new_customer_revenue} + ${total_returning_customer_revenue})"
+              format: "percent"
               round: 1
-
-      - name: is_organic_shopping
-        description: "Appeared in organic shopping results"
+      - name: returning_customer_revenue
         meta:
           dimension:
-            type: boolean
-            label: "Organic shopping"
-
-      - name: is_product_snippets
-        description: "Appeared as product snippet"
+            hidden: true
+          metrics:
+            total_returning_customer_revenue:
+              type: sum
+              label: "Returning customer revenue"
+              format: "eur"
+              round: 0
+            returning_customer_revenue_pct:
+              type: number
+              label: "Return cust. rev %"
+              sql: "SAFE_DIVIDE(${total_returning_customer_revenue}, ${total_new_customer_revenue} + ${total_returning_customer_revenue})"
+              format: "percent"
+              round: 1
+      - name: new_customer_aov
         meta:
           dimension:
-            type: boolean
-            label: "Product snippet"
-
-      - name: is_merchant_listings
-        description: "Appeared in merchant listings"
+            hidden: true
+          metrics:
+            avg_new_customer_aov:
+              type: average
+              label: "New customer AOV"
+              format: "eur"
+              round: 0
+      - name: returning_customer_aov
         meta:
           dimension:
-            type: boolean
-            label: "Merchant listing"
+            hidden: true
+          metrics:
+            avg_returning_customer_aov:
+              type: average
+              label: "Returning customer AOV"
+              format: "eur"
+              round: 0
+      - name: new_customer_items
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_new_customer_items:
+              type: sum
+              label: "New customer items"
+      - name: returning_customer_items
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_returning_customer_items:
+              type: sum
+              label: "Returning customer items"
+            avg_items_per_order:
+              type: number
+              label: "Avg items per order"
+              sql: "SAFE_DIVIDE(${total_new_customer_items} + ${total_returning_customer_items}, ${sum_total_customers})"
+              round: 1
+      - name: customer_lifetime_value
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            avg_clv:
+              type: average
+              label: "Customer lifetime value"
+              format: "eur"
+              round: 0
 
   # ── ECOMMERCE FUNNEL ──────────────────────────────────────────────────────
   - name: mart_ecommerce_funnel
-    description: "Ecommerce conversion funnel by device and channel — use for funnel visualizations"
+    description: "Ecommerce conversion funnel by device and channel"
     meta:
       label: "Ecommerce Funnel"
     columns:
       - name: event_date
-        description: "Date"
         meta:
           dimension:
             type: date
             label: "Date"
-
       - name: device_category
-        description: "Device (desktop, mobile)"
         meta:
           dimension:
             type: string
             label: "Device"
-
       - name: channel_grouping
-        description: "Traffic channel"
         meta:
           dimension:
             type: string
             label: "Channel"
-
       - name: sessions
-        description: "Total sessions entering the funnel"
         meta:
           dimension:
             hidden: true
@@ -502,9 +459,7 @@ models:
             total_sessions:
               type: sum
               label: "Sessions"
-
       - name: product_views
-        description: "Sessions with a product view"
         meta:
           dimension:
             hidden: true
@@ -518,9 +473,7 @@ models:
               sql: "SAFE_DIVIDE(${total_product_views}, ${total_sessions})"
               format: "percent"
               round: 1
-
       - name: add_to_cart
-        description: "Sessions with add-to-cart"
         meta:
           dimension:
             hidden: true
@@ -534,9 +487,7 @@ models:
               sql: "SAFE_DIVIDE(${total_add_to_cart}, ${total_sessions})"
               format: "percent"
               round: 1
-
       - name: begin_checkout
-        description: "Sessions with begin checkout"
         meta:
           dimension:
             hidden: true
@@ -544,15 +495,7 @@ models:
             total_begin_checkout:
               type: sum
               label: "Begin checkout"
-            checkout_rate:
-              type: number
-              label: "Checkout rate"
-              sql: "SAFE_DIVIDE(${total_begin_checkout}, ${total_add_to_cart})"
-              format: "percent"
-              round: 1
-
       - name: purchases
-        description: "Completed purchases"
         meta:
           dimension:
             hidden: true
@@ -560,21 +503,13 @@ models:
             total_purchases:
               type: sum
               label: "Purchases"
-            purchase_completion_rate:
-              type: number
-              label: "Purchase completion rate"
-              sql: "SAFE_DIVIDE(${total_purchases}, ${total_begin_checkout})"
-              format: "percent"
-              round: 1
             overall_conversion_rate:
               type: number
-              label: "Overall conversion rate"
+              label: "Conversion rate"
               sql: "SAFE_DIVIDE(${total_purchases}, ${total_sessions})"
               format: "percent"
               round: 2
-
       - name: revenue
-        description: "Revenue in EUR"
         meta:
           dimension:
             hidden: true
@@ -583,36 +518,25 @@ models:
               type: sum
               label: "Revenue"
               format: "eur"
-              round: 2
-            avg_order_value:
-              type: number
-              label: "Avg order value"
-              sql: "SAFE_DIVIDE(${total_revenue}, ${total_purchases})"
-              format: "eur"
-              round: 2
+              round: 0
 
   # ── CUSTOMER RETENTION ─────────────────────────────────────────────────────
   - name: mart_customer_retention
-    description: "Monthly customer retention cohort analysis — use for retention heatmap and cohort charts"
+    description: "Monthly customer retention cohort analysis"
     meta:
       label: "Customer Retention"
     columns:
       - name: cohort_month
-        description: "Month of first purchase (YYYY-MM)"
         meta:
           dimension:
             type: string
             label: "Cohort month"
-
       - name: months_since_first_purchase
-        description: "Months since first purchase (0 = acquisition month)"
         meta:
           dimension:
             type: number
             label: "Months since first purchase"
-
       - name: new_customers
-        description: "Number of new customers in this cohort"
         meta:
           dimension:
             hidden: true
@@ -620,9 +544,7 @@ models:
             total_new_customers:
               type: sum
               label: "New customers"
-
       - name: returning_customers
-        description: "Number of customers who returned in this period"
         meta:
           dimension:
             hidden: true
@@ -630,9 +552,7 @@ models:
             total_returning_customers:
               type: sum
               label: "Returning customers"
-
       - name: retention_rate
-        description: "Retention rate (returning / new customers)"
         meta:
           dimension:
             hidden: true
@@ -642,9 +562,7 @@ models:
               label: "Retention rate"
               format: "percent"
               round: 1
-
       - name: cohort_revenue
-        description: "Revenue generated by this cohort in this period"
         meta:
           dimension:
             hidden: true
@@ -653,10 +571,66 @@ models:
               type: sum
               label: "Cohort revenue"
               format: "eur"
-              round: 2
-            avg_revenue_per_customer:
+              round: 0
+
+  # ── SEO PERFORMANCE ────────────────────────────────────────────────────────
+  - name: mart_seo_performance
+    description: "Google Search Console site-level SEO performance"
+    meta:
+      label: "SEO Performance"
+    columns:
+      - name: data_date
+        meta:
+          dimension:
+            type: date
+            label: "Date"
+      - name: site_url
+        meta:
+          dimension:
+            type: string
+            label: "Site URL"
+      - name: query
+        meta:
+          dimension:
+            type: string
+            label: "Query"
+      - name: search_type
+        meta:
+          dimension:
+            type: string
+            label: "Search type"
+      - name: impressions
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_impressions:
+              type: sum
+              label: "Impressions"
+      - name: clicks
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_clicks:
+              type: sum
+              label: "Clicks"
+            ctr:
               type: number
-              label: "Revenue per returning customer"
-              sql: "SAFE_DIVIDE(${total_cohort_revenue}, ${total_returning_customers})"
-              format: "eur"
+              label: "CTR"
+              sql: "SAFE_DIVIDE(${total_clicks}, ${total_impressions})"
+              format: "percent"
               round: 2
+      - name: sum_top_position
+        meta:
+          dimension:
+            hidden: true
+          metrics:
+            total_sum_top_position:
+              type: sum
+              hidden: true
+            avg_position:
+              type: number
+              label: "Avg position"
+              sql: "SAFE_DIVIDE(${total_sum_top_position}, ${total_impressions})"
+              round: 1

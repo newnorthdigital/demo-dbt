@@ -1,44 +1,50 @@
 version: 2
 
 seeds:
-  - name: seed_daily_performance
-    description: "Daily GA4 website performance with traffic attribution"
-    columns:
-      - name: session_date
-        description: "Date of the session"
-      - name: sessions
-        description: "Number of sessions"
-      - name: revenue
-        description: "Transaction revenue in EUR"
+  - name: seed_orders_revenue
+    description: "Daily orders, revenue, refunds, COGS by channel"
+    config:
+      column_types:
+        gross_revenue: FLOAT64
+        amount_refunded: FLOAT64
+        cogs: FLOAT64
+        ad_spend: FLOAT64
 
-  - name: seed_google_ads_performance
-    description: "Daily Google Ads campaign performance"
-    columns:
-      - name: report_date
-        description: "Date of the report"
-      - name: cost
-        description: "Ad spend in EUR"
+  - name: seed_product_performance
+    description: "Daily product-level sales, returns, COGS"
+    config:
+      column_types:
+        item_price: FLOAT64
+        revenue: FLOAT64
+        refund_amount: FLOAT64
+        cogs: FLOAT64
+        repeat_order_pct: FLOAT64
 
-  - name: seed_seo_performance
-    description: "Daily Google Search Console site-level performance"
-    columns:
-      - name: data_date
-        description: "Date of the data"
-
-  - name: seed_seo_pages
-    description: "Daily Google Search Console page-level performance"
-    columns:
-      - name: data_date
-        description: "Date of the data"
+  - name: seed_customers
+    description: "Daily new vs returning customer metrics"
+    config:
+      column_types:
+        new_customer_revenue: FLOAT64
+        returning_customer_revenue: FLOAT64
+        new_customer_aov: FLOAT64
+        returning_customer_aov: FLOAT64
+        customer_lifetime_value: FLOAT64
 
   - name: seed_ecommerce_funnel
     description: "Daily ecommerce funnel stages by device and channel"
-    columns:
-      - name: event_date
-        description: "Date of the events"
+    config:
+      column_types:
+        revenue: FLOAT64
 
   - name: seed_customer_retention
     description: "Monthly customer retention cohort data"
-    columns:
-      - name: cohort_month
-        description: "Month of first purchase (YYYY-MM)"
+    config:
+      column_types:
+        retention_rate: FLOAT64
+        cohort_revenue: FLOAT64
+
+  - name: seed_seo_performance
+    description: "Daily Google Search Console performance"
+    config:
+      column_types:
+        sum_top_position: FLOAT64
